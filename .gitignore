@@ -1,0 +1,36 @@
+# Python virtual environment
+venv/
+env/
+.env/
+venv*/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# Streamlit files
+.streamlit/secrets.toml
+
+# Model files (if you don't want to upload large models)
+*.h5
+*.pkl
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
