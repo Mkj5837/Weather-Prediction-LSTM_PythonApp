@@ -45,7 +45,7 @@ st.sidebar.markdown(
 st.sidebar.write("MAE: 2.38 °C")
 st.sidebar.write("RMSE: 2.98 °C")
 st.sidebar.write("R²: 0.887")
-st.sidebar.write("Accuracy (±2°C): 48.6%")
+st.sidebar.write("Accuracy: 48.6%")
 
 def predict_next_day(values):
     """Predict next day's max temperature from 30 daily values."""
