@@ -13,7 +13,7 @@ st.set_page_config(
 
 st.title("Weather Prediction with LSTM")
 st.markdown(
-    "This app predicts the next day's maximum temperature using the last 30 days of Basel(Switzerland) temperature data."
+    "This app predicts the next day's maximum temperature using the last 30 days of Basel (Switzerland) temperature data."
 )
 
 @st.cache_resource
@@ -45,14 +45,14 @@ st.sidebar.markdown(
 st.sidebar.write("MAE: 2.38 °C")
 st.sidebar.write("RMSE: 2.98 °C")
 st.sidebar.write("R²: 0.887")
-st.sidebar.write("Accuracy: 48.6%")
+st.sidebar.write("Accuracy (±2°C): 48.6%")
 
 def predict_next_day(values):
     """Predict next day's max temperature from 30 daily values."""
     if len(values) != 30:
         return None, f"Expected 30 values, got {len(values)}."
     
-    # -------------------- Basic validation: check for non-numeric or out-of-range --------------------
+    # Basic validation: check for non-numeric or out-of-range
     try:
         arr = np.array(values, dtype=float)
     except ValueError:
@@ -68,17 +68,24 @@ def predict_next_day(values):
     pred = scaler.inverse_transform([[pred_scaled]])[0][0]
     return pred, None
 
-def plot_temperature_data(days, temperatures, prediction):
-    """Create a matplotlib plot of temperature data with prediction."""
+def plot_temperature_data(days, historical, prediction):
+    """
+    Create a matplotlib plot of temperature data with prediction.
+    days: list of 31 day numbers (1..31)
+    historical: list of 30 historical temperatures
+    prediction: next day temperature (float)
+    """
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    # Plot last 30 days
-    ax.plot(days[:-1], temperatures, 'b-o', linewidth=2, markersize=6, label='Last 30 days')
+    # Plot last 30 days (days 1..30)
+    ax.plot(days[:30], historical, 'b-o', linewidth=2, markersize=6, label='Last 30 days')
     
-    # Plot prediction as a single point
-    ax.plot(days[-1], prediction, 'ro', markersize=12, label='Prediction')
+    # Plot prediction (day 31)
+    ax.plot(days[30], prediction, 'ro', markersize=12, label='Prediction')
     
-    # Customize the plot
+    # dashed line connecting last historical point to prediction
+    ax.plot([days[29], days[30]], [historical[-1], prediction], 'r--', alpha=0.5)
+    
     ax.set_xlabel('Day', fontsize=12)
     ax.set_ylabel('Temperature (°C)', fontsize=12)
     ax.set_title('Last 30 Days + Prediction', fontsize=14)
@@ -105,7 +112,7 @@ if input_method == "Manual Entry":
         else:
             st.success(f"Predicted next day max temperature: {pred:.1f} °C")
             days = list(range(1, 32))
-            fig = plot_temperature_data(days, manual_values + [pred], pred)
+            fig = plot_temperature_data(days, manual_values, pred)
             st.pyplot(fig)
             plt.close(fig)
 
@@ -118,7 +125,7 @@ elif input_method == "Upload CSV":
         st.write("First few rows of uploaded file:")
         st.write(df.head())
         
-        # -------------------- Suggest temperature column --------------------
+        # Suggest temperature column
         temp_cols = [c for c in df.columns if 'temp' in c.lower() or 'temperature' in c.lower()]
         if temp_cols:
             col = st.selectbox("Select temperature column", temp_cols)
@@ -126,7 +133,7 @@ elif input_method == "Upload CSV":
             col = st.selectbox("Select temperature column", df.columns)
         
         if len(df) >= 30:
-            # -------------------- Extract last 30 values, ensure numeric --------------------
+            # Extract last 30 values, ensure numeric
             raw_vals = df[col].iloc[-30:].values
             try:
                 values = raw_vals.astype(float).tolist()
@@ -141,16 +148,16 @@ elif input_method == "Upload CSV":
                 else:
                     st.success(f"Predicted next day max temperature: {pred:.1f} °C")
                     days = list(range(1, 32))
-                    fig = plot_temperature_data(days, values + [pred], pred)
+                    fig = plot_temperature_data(days, values, pred)
                     st.pyplot(fig)
                     plt.close(fig)
         else:
             st.warning(f'File has {len(df)} rows. Need at least 30 rows.')
 
-#-------------------- Sample data 
+# -------------------- Sample data --------------------
 else:
     st.subheader('Sample data prediction')
-    #Use actual sample from the dataset (around 2000-01-01 to 2000-01-30)
+    # Use actual sample from the dataset (around 2000-01-01 to 2000-01-30)
     sample_values = [
         3.9, 4.8, 4.8, 7.5, 8.6, 6.7, 5.5, 4.2, 3.1, 2.8,
         3.5, 4.0, 5.0, 6.2, 7.1, 6.8, 5.5, 4.4, 3.9, 4.2,
@@ -165,12 +172,12 @@ else:
         else:
             st.success(f"Predicted next day max temperature: {pred:.1f} °C")
             days = list(range(1, 32))
-            fig = plot_temperature_data(days, sample_values + [pred], pred)
+            fig = plot_temperature_data(days, sample_values, pred)
             st.pyplot(fig)
             plt.close(fig)
 
 st.markdown('---')
 st.markdown(
-    "Guide: Enter 30 consecutive daily maximum temperatures (°C), or upload a CSV with a temperature column, "
+    "**Guide:** Enter 30 consecutive daily maximum temperatures (°C), upload a CSV with a temperature column, "
     "or use the sample data. The model uses the last 30 days to predict the next day's maximum temperature."
 )
